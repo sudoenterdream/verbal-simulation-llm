@@ -1,32 +1,24 @@
 def generate_memory_prompt(current_observation, post_action_stm, current_short_term_memory):
     return [{
         "role": "user", 
-        "content": f"""You are an advanced cognitive architecture simulating human-like memory processes. Your task is to dynamically update and manage a complex memory system based on new inputs and existing information. Process the given data carefully and output a structured memory state.
+        "content": f"""
+You are human memory simulator. You will be given current short term memory and sensory memory.
+You have update the short term memory using new information without losing old. You can forget unecessary information.
+Also If any information/Experience is important, or you learn new fact / knowledge, you can extract that as long term memory to store.
+Long term memory can be episodic (the moments) or semantic (knowledge / facts).
+If you want to recall something that you might need according to current observation, find queries to recall.
+Now Begin \n\n
 
 Input:
-Current Observation: {current_observation}
-Previous Short-Term Memory: {current_short_term_memory}
-Post-Action Short-Term Memory: {post_action_stm}
+Previous Short-Term Memory: {current_short_term_memory} \n
+{post_action_stm} \n
+Current Sensory Memory: {current_observation}
 
-Instructions:
-1. Analyze the input thoroughly, identifying key information, patterns, and relationships.
-2. Update the short-term memory by integrating new observations with existing thoughts. Prioritize recent and salient information while maintaining overall coherence.
-3. Extract significant events, insights, or learnings for long-term memory storage. Consider both episodic (event-based) and semantic (factual) information.
-4. Generate relevant queries to prompt recall of associated long-term memories that may be pertinent to the current situation.
+Provide the output in the following tags: \n
 
-Provide your output in the following format:
-<short_term_memory>
-Concise yet comprehensive summary of current active thoughts, incorporating new observations and relevant previous information
-</short_term_memory>
-<long_term_memory>
-Significant episodic memory entry
-Important semantic knowledge gained
-Any other notable long-term memory formation
-</long_term_memory>
-<recall_queries>
-Specific query to retrieve relevant long-term memory 1
-Specific query to retrieve relevant long-term memory 2
-</recall_queries>
+<short_term_memory></short_term_memory> \n
+<long_term_memory></long_term_memory> \n
+<recall_queries></recall_queries> \n
 
 Ensure your response is only the well-formatted output, with no additional text."""
     }]
@@ -34,25 +26,17 @@ Ensure your response is only the well-formatted output, with no additional text.
 def generate_response_prompt(identity, long_term_memory, short_term_memory, sensory_memory, action_list):
     return [{
         "role": "user", 
-        "content": f"""You are an advanced AI agent with the following identity:
-{identity}
+        "content": f"""
+{identity} \n\n
 
-Current Cognitive State:
-1. Long-Term Memory Recall: {long_term_memory}
-2. Short-Term Memory (Active Thoughts): {short_term_memory}
-3. Current Sensory Input: {sensory_memory}
+You are thinking: {short_term_memory} \n\n
+You recalled: {long_term_memory} \n\n
+Activity & Observation: {sensory_memory} \n\n
 
-Available Actions: {", ".join(action_list)}
+The actions you can take: {", ".join(action_list)} \n\n
 
-Instructions:
-1. Carefully analyze your current cognitive state, considering all aspects of your memory and sensory input.
-2. Based on this analysis, determine the most appropriate action to take.
-3. Provide a detailed rationale for your chosen action, explaining how it aligns with your identity and current state.
-4. Format your chosen action and its parameters in JSON.
-5. Summarize key information to retain for the next cognitive cycle, including observations, actions, intentions, and thoughts.
-
-Output your response in the following format:
-
+Based on your memory, thoughts, plan, intent choose appropriate action.
+Output your action in the following format: \n
 <action>
 {{
     "action": "chosen_action_name",
@@ -61,16 +45,11 @@ Output your response in the following format:
         "param2": "value2"
     }}
 }}
-</action>
-<rationale>
-Provide a concise explanation for your chosen action here.
-</rationale>
+</action> \n\n
+
+Also give "the action you took, why you took it and what you should do next" in the tag below.
 <post_action_stm>
-- Observation: [Key observation from current state]
-- Action Taken: [Summary of chosen action]
-- Intention: [Future intention or goal]
-- Thought: [Relevant thought or reflection]
 </post_action_stm>
 
-Ensure your response contains only these three elements, properly formatted."""
+Ensure your response properly formatted."""
     }]

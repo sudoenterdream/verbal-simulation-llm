@@ -11,8 +11,6 @@ class DiscordHandler:
         intents.dm_messages = True  # Ensure the bot can read DM messages
         intents.members = True  # Ensure the bot can access member data
         self.bot = commands.Bot(command_prefix="!", intents=intents)
-        self.discord_home = None
-        self.phone = None
 
     async def on_ready(self):
         print(f'Logged in as {self.bot.user}')
@@ -37,13 +35,10 @@ class DiscordHandler:
             chat_name = f"DM/{member.name}"
             chats[chat_name] = member.dm_channel
 
-        discord_home = DiscordHome(chats, bot_name, self)
+        discord_home = DiscordHome(chats, bot_name)
         self.environment.add_state(discord_home)
-        self.discord_home = discord_home
         for chat_name, channel in chats.items():
             self.environment.add_state(DiscordChat(f"chat_{chat_name}", bot_name, channel, self))
-
-        self.phone = self.environment.states['phone']
 
     async def get_latest_messages(self, channel):
         messages = []
@@ -63,16 +58,9 @@ class DiscordHandler:
             chat_name = f"DM/{message.author.name}"
         else:
             chat_name = f"{message.guild.name}/{message.channel.name}"
-        
-        # Increment notification count
-        self.discord_home.increment_notification(chat_name)
-
         user_message = f'{message.author.name}: {message.content}'
         chat_state = f"chat_{chat_name}"
         print('updated')
-
-    def update_phone_notifications(self, count):
-        self.phone.update_notifications('discord', count)
 
     async def run(self):
         @self.bot.event
