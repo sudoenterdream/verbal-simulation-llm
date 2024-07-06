@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime
 from environment.environment import State
 
 class DiscordChat(State):
@@ -16,6 +17,12 @@ class DiscordChat(State):
             "exit_chat": {
                 "next_state": "discord_home",
                 "params": {}
+            },
+            "wait_for_response": {
+                "next_state": name,
+                "params": {
+                    "seconds": "int"
+                }
             }
         }
         super().__init__(name, "", actions)
@@ -23,34 +30,59 @@ class DiscordChat(State):
     async def fetch_latest_messages(self):
         messages = await self.handler.get_latest_messages(self.channel)
         formatted_history = []
-        for entry in messages:
-            author, content = entry.split(": ", 1)
-            if author == self.bot_name:
-                formatted_history.append(f"you : {content}")
+        current_time = datetime.utcnow()
+        for timestamp, author, content in messages:
+            message_time = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
+            if (current_time - message_time).days >= 1:
+                formatted_time = message_time.strftime("%d %B")
             else:
-                formatted_history.append(entry)
+                formatted_time = message_time.strftime("%H:%M")
+            formatted_entry = f"{formatted_time} - {author}: {content}"
+            if author == self.bot_name:
+                formatted_entry = f"{formatted_time} - you: {content}"
+            formatted_history.append(formatted_entry)
         return "\n".join(formatted_history)
 
     async def get_sensory_information(self):
-        self.sensory_information = await self.fetch_latest_messages()
+        self.sensory_information = f"""
+        You are in {self.channel} chat. \n
+        Don't send more than 3 messages in a row.
+        Resume talking if someone replied to your latest message.
+        If no message arrived from others in the last 5 minutes, they must be offline. \n
+        Below are the messages you see \n\n
+
+        {await self.fetch_latest_messages()}"""
         return self.sensory_information
 
     def send_message(self, message):
         asyncio.create_task(self.channel.send(message))  # Send the message to the Discord channel
 
-    def perform_action(self, action, params=None):
+    async def wait_for_response(self, seconds):
+        await asyncio.sleep(min(seconds, 10))  # Wait for specified seconds or 10 seconds maximum
+
+    async def perform_action(self, action, params=None):
         if action == "send_message" and params:
             message = params.get('message')
             if message:
                 self.send_message(message)
                 return self.name  # Stay in the same state after sending a message
-        return super().perform_action(action)
+        elif action == "wait_for_response" and params:
+            seconds = int(params.get('seconds', 10))  # Default to 10 seconds if not specified, convert to int
+            await self.wait_for_response(seconds)
+            return self.name  # Stay in the same state after waiting for a response
+        return await super().perform_action(action)
 
 class DiscordHome(State):
     def __init__(self, chats, bot_name):
         actions = {f"open_chat_{chat}": {"next_state": f"chat_{chat}", "params": {}} for chat in chats}
         actions["close_discord"] = {"next_state": "phone", "params": {}}
-        sensory_information = "No chats available." if not chats else f"Chats available: {', '.join(chats.keys())}."
+        sensory_information = "No chats available currently." if not chats else f"""
+        You are using discord.
+        Chats available: {'\n'.join(chats.keys())}.\n\n
+
+        Some of these are group chats, and some DMs.
+        You can open and close chats to switch between chats
+        """
         super().__init__("discord_home", sensory_information, actions)
         self.chats = chats
         self.bot_name = bot_name

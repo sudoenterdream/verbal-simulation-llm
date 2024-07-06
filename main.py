@@ -27,16 +27,16 @@ async def simulate(env, brain):
             # print("Invalid action chosen by the brain. Trying again.")
             continue
 
-        result = env.perform_action(action_name, action_params)
+        result = await env.perform_action(action_name, action_params)  # Await the perform_action call
         if result:
             print(result)
-        await asyncio.sleep(7)
+        await asyncio.sleep(10)
 
 async def main():
     env = Environment()
 
     # Add initial states
-    env.add_state(State("root", "You have notifications on your phone.", {"open_phone": {"next_state": "phone", "params": {}}}))
+    env.add_state(State("root", "You wake up", {"open_phone": {"next_state": "phone", "params": {}}}))
     env.add_state(Phone())
 
     # Initialize the Discord handler

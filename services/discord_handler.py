@@ -44,7 +44,8 @@ class DiscordHandler:
         messages = []
         try:
             async for message in channel.history(limit=20):
-                messages.append(f"{message.author.name}: {message.content}")
+                timestamp = message.created_at.strftime("%Y-%m-%d %H:%M:%S")
+                messages.append((timestamp, message.author.name, message.content))
             messages.reverse()  # To keep the latest messages at the end
         except Exception as e:
             print(f"Failed to get messages for {channel}: {e}")
@@ -58,7 +59,7 @@ class DiscordHandler:
             chat_name = f"DM/{message.author.name}"
         else:
             chat_name = f"{message.guild.name}/{message.channel.name}"
-        user_message = f'{message.author.name}: {message.content}'
+        user_message = f'{message.created_at.strftime("%Y-%m-%d %H:%M:%S")} - {message.author.name}: {message.content}'
         chat_state = f"chat_{chat_name}"
         print('updated')
 

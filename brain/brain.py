@@ -23,12 +23,12 @@ class Brain:
         self.identity = load_identity()
         self.long_term_memory = []
 
-    async def update_and_fetch_memory(self, current_observation, post_action_stm):
-        self.short_term_memory, self.long_term_memory = await update_and_fetch_memory(current_observation, post_action_stm, self.short_term_memory)
+    async def update_and_fetch_memory(self):
+        self.short_term_memory, self.long_term_memory = await update_and_fetch_memory(self.post_action_stm, self.short_term_memory)
 
     async def perceive_and_act(self, observation: str, actions: dict) -> dict:
         # Update memory and fetch long-term memory
-        await self.update_and_fetch_memory(observation, self.post_action_stm)
+        await self.update_and_fetch_memory()
         
         # Act
         sensory_memory = observation
@@ -54,14 +54,19 @@ class Brain:
 
         # Extract the content within labeled tags
         action_match = re.search(r'<action>(.*?)</action>', response, re.DOTALL)
-        rationale_match = re.search(r'<rationale>(.*?)</rationale>', response, re.DOTALL)
         post_action_stm_match = re.search(r'<post_action_stm>(.*?)</post_action_stm>', response, re.DOTALL)
+        # identity_match = re.search(r'<update_identity>(.*?)</update_identity>', response, re.DOTALL)
+
 
         chosen_action = json.loads(action_match.group(1).strip()) if action_match else {"action": None, "params": {}}
-        rationale = rationale_match.group(1).strip() if rationale_match else ""
+        # identity_update = identity_match.group(1).strip() if identity_match else ""
         post_action_stm = post_action_stm_match.group(1).strip() if post_action_stm_match else ""
 
         # Update post_action_stm for next cycle
         self.post_action_stm = post_action_stm
+        # if identity_update != "":
+        #     self.identity = identity_update
+        #     with open("brain/state/character_config.txt", "w") as file:
+        #         file.write(identity_update)
         
         return chosen_action

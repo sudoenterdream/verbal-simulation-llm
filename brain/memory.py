@@ -3,8 +3,8 @@ from .prompts import generate_memory_prompt
 import json
 import re
 
-async def update_and_fetch_memory(current_observation, post_action_stm, current_short_term_memory):
-    memory_prompt = generate_memory_prompt(current_observation, post_action_stm, current_short_term_memory)
+async def update_and_fetch_memory(post_action_stm, current_short_term_memory):
+    memory_prompt = generate_memory_prompt(post_action_stm, current_short_term_memory)
     
     try:
         response = generate_completion(memory_prompt, model_type="deep", max_tokens=2000)

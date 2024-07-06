@@ -1,3 +1,5 @@
+from datetime import datetime
+
 class State:
     def __init__(self, name, sensory_information, actions):
         self.name = name
@@ -8,13 +10,13 @@ class State:
         return self.sensory_information
 
     def get_available_actions(self):
-        return {action: details['params'] for action, details in self.actions.items()}
+        return self.actions
 
-    def perform_action(self, action, params=None):
+    async def perform_action(self, action, params=None):
         if action in self.actions:
-            return self.actions[action]['next_state']
-        return None
-
+            return self.actions[action]["next_state"]
+        else:
+            raise ValueError(f"Action {action} is not available in state {self.name}")
 
 class Environment:
     def __init__(self):
@@ -27,13 +29,14 @@ class Environment:
             self.current_state = state
 
     async def get_sensory_information(self):
-        return await self.current_state.get_sensory_information()
+        temporal_info = datetime.now().strftime("%d %B %Y (%I:%M %p)")
+        return temporal_info + "\n" + await self.current_state.get_sensory_information()
 
     def get_available_actions(self):
         return self.current_state.get_available_actions()
 
-    def perform_action(self, action, params=None):
-        next_state_name = self.current_state.perform_action(action, params)
+    async def perform_action(self, action, params=None):
+        next_state_name = await self.current_state.perform_action(action, params)
         if next_state_name and next_state_name in self.states:
             self.current_state = self.states[next_state_name]
             return f"Performed action: {action}"
