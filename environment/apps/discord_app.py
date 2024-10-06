@@ -1,6 +1,6 @@
 import asyncio
 from datetime import datetime
-from environment.environment import State
+from ..state import State
 
 class DiscordChat(State):
     def __init__(self, name, bot_name, channel, handler):
@@ -45,11 +45,10 @@ class DiscordChat(State):
 
     async def get_sensory_information(self):
         self.sensory_information = f"""
-        You are in {self.channel} chat. \n
-        Don't send more than 3 messages in a row.
-        Resume talking if someone replied to your latest message.
-        If no message arrived from others in the last 5 minutes, they must be offline. \n
-        Below are the messages you see \n\n
+        I am in {self.channel} chat. \n
+        I shouldn't send too many messages in a row, but if new messages are below my last message, I'll start talking.
+        If no message arrives from others in the last 5 minutes, they must be offline. \n
+        I see these messages \n\n
 
         {await self.fetch_latest_messages()}"""
         return self.sensory_information
@@ -58,7 +57,7 @@ class DiscordChat(State):
         asyncio.create_task(self.channel.send(message))  # Send the message to the Discord channel
 
     async def wait_for_response(self, seconds):
-        await asyncio.sleep(min(seconds, 10))  # Wait for specified seconds or 10 seconds maximum
+        await asyncio.sleep(min(seconds, 5))  # Wait for specified seconds or 10 seconds maximum
 
     async def perform_action(self, action, params=None):
         if action == "send_message" and params:
@@ -77,11 +76,11 @@ class DiscordHome(State):
         actions = {f"open_chat_{chat}": {"next_state": f"chat_{chat}", "params": {}} for chat in chats}
         actions["close_discord"] = {"next_state": "phone", "params": {}}
         sensory_information = "No chats available currently." if not chats else f"""
-        You are using discord.
-        Chats available: {'\n'.join(chats.keys())}.\n\n
+        I am using discord.
+        I see these chats: {'\n'.join(chats.keys())}.\n\n
 
         Some of these are group chats, and some DMs.
-        You can open and close chats to switch between chats
+        I can open and close chats to switch between chats
         """
         super().__init__("discord_home", sensory_information, actions)
         self.chats = chats

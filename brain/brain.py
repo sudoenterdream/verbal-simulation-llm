@@ -11,14 +11,22 @@ SENSORY_MEMORY_SIZE = 20
 
 def load_identity():
     try:
-        with open("brain/state/character_config.txt", "r") as file:
+        with open("brain/state/immutable_identity.txt", "r") as file:
             return file.read().strip()
     except FileNotFoundError:
         return ""
 
+def load_stm():
+    try:
+        with open("brain/state/short_term_memory.txt", "r") as file:
+            return file.read().strip()
+    except FileNotFoundError:
+        return ""
+
+
 class Brain:
     def __init__(self):
-        self.short_term_memory = ""
+        self.short_term_memory = load_stm()
         self.post_action_stm = None
         self.identity = load_identity()
         self.long_term_memory = []

@@ -1,27 +1,16 @@
 from datetime import datetime
-
-class State:
-    def __init__(self, name, sensory_information, actions):
-        self.name = name
-        self.sensory_information = sensory_information
-        self.actions = actions
-
-    async def get_sensory_information(self):
-        return self.sensory_information
-
-    def get_available_actions(self):
-        return self.actions
-
-    async def perform_action(self, action, params=None):
-        if action in self.actions:
-            return self.actions[action]["next_state"]
-        else:
-            raise ValueError(f"Action {action} is not available in state {self.name}")
+from .phone import Phone
+from .virtual_space import VirtualSpace
+from .apps.arxiv_app import ArxivApp
 
 class Environment:
     def __init__(self):
         self.states = {}
         self.current_state = None
+        self.add_state(VirtualSpace())
+        self.add_state(Phone())
+        self.add_state(ArxivApp("arxiv_app", self)) # fix the env passing later
+
 
     def add_state(self, state):
         self.states[state.name] = state

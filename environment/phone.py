@@ -1,11 +1,11 @@
-from environment.environment import State
+from .state import State
 
 class Phone(State):
     def __init__(self):
         super().__init__(
             "phone",
-            """You opened your phone. \n
-            Available Apps: Discord, Arxiv
+            """I am checking my phone. \n
+            I see Available Apps: Discord, Arxiv
             """,
             {
                 "open_app_discord": {

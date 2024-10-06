@@ -1,10 +1,10 @@
 import asyncio
-from environment.environment import State
+from ..state import State
 from services.arxiv_handler import ArxivHandler
 
 class ArxivApp(State):
-    def __init__(self, name):
-        self.handler = ArxivHandler()
+    def __init__(self, name, env):
+        self.handler = ArxivHandler(env)
         actions = {
             "search_papers": {
                 "next_state": "view_list_of_papers",
@@ -26,7 +26,7 @@ class ArxivApp(State):
         super().__init__(name, "", actions)
 
     async def get_sensory_information(self):
-        self.sensory_information = "You are using the Arxiv app. You can search for papers or view trending papers."
+        self.sensory_information = "I am using the Arxiv app. I can search for papers or view trending papers. But I wont read more than 2 papers a day"
         return self.sensory_information
 
     async def perform_action(self, action, params=None):

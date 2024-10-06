@@ -1,10 +1,11 @@
 import discord
 from discord.ext import commands
 from environment.apps.discord_app import DiscordHome, DiscordChat
+import os
 
 class DiscordHandler:
-    def __init__(self, token, environment):
-        self.token = token
+    def __init__(self, environment):
+        self.token = os.getenv('DISCORD_TOKEN')
         self.environment = environment
         intents = discord.Intents.default()
         intents.message_content = True
@@ -52,15 +53,15 @@ class DiscordHandler:
         return messages
 
     async def on_message(self, message):
-        if message.author == self.bot.user:
-            return
+        # if message.author == self.bot.user:
+        #     return
 
-        if isinstance(message.channel, discord.DMChannel):
-            chat_name = f"DM/{message.author.name}"
-        else:
-            chat_name = f"{message.guild.name}/{message.channel.name}"
-        user_message = f'{message.created_at.strftime("%Y-%m-%d %H:%M:%S")} - {message.author.name}: {message.content}'
-        chat_state = f"chat_{chat_name}"
+        # if isinstance(message.channel, discord.DMChannel):
+        #     chat_name = f"DM/{message.author.name}"
+        # else:
+        #     chat_name = f"{message.guild.name}/{message.channel.name}"
+        # user_message = f'{message.created_at.strftime("%Y-%m-%d %H:%M:%S")} - {message.author.name}: {message.content}'
+        # chat_state = f"chat_{chat_name}"
         print('updated')
 
     async def run(self):
